@@ -6,7 +6,3 @@ requests>=2.31.0
 <<<<<<< HEAD
 python-dotenv>=1.0.0
 setuptools
-=======
-setuptools
-python-dotenv>=1.0.0
->>>>>>> 1de5df1 (updated url)
