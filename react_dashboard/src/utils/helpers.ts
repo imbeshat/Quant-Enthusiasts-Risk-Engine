@@ -53,6 +53,7 @@ export const getRiskColor = (value: number): string => {
   return "text-gray-400";
 };
 
-export const getUniqueAssets = (portfolio: Instrument[]): Set<string> => {
+export const getUniqueAssets = <T extends { asset_id: string }>(portfolio: T[]): Set<string> => {
   return new Set(portfolio.map((p) => p.asset_id));
 };
+

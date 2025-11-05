@@ -5,7 +5,7 @@
 ### 1. Navigate to the dashboard directory
 
 ```bash
-cd react-dashboard
+cd react_dashboard
 ```
 
 ### 2. Install dependencies

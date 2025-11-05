@@ -2,7 +2,6 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
   resolve: {
@@ -18,6 +17,50 @@ export default defineConfig({
   },
   server: {
     port: 3000,
-    open: true,
+    host: true,
+    open: false,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+      },
+      '/health': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+      },
+      '/calculate_risk': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+      },
+      '/price_option': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+      },
+      '/update_market_data': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+      },
+      '/get_cached_market_data': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+      },
+      '/clear_market_data_cache': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+      },
+      '/portfolio': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+      }
+    }
   },
+  build: {
+    outDir: 'dist',
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks: undefined
+      }
+    }
+  }
 });

@@ -1,3 +1,4 @@
+from pathlib import Path
 from flask import Flask, render_template, request, jsonify, send_from_directory
 from flask_cors import CORS
 import quant_risk_engine
@@ -197,12 +198,29 @@ def create_option(item: Dict[str, Any]) -> Any:
     
     return option
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DASHBOARD_DIR = os.path.join(BASE_DIR, "..", "js_dashboard")
+BASE_DIR = Path(__file__).resolve().parent
+DASHBOARD_DIR = BASE_DIR.parent / "react_dashboard" / "dist"
 
-@app.route("/")
-def serve_dashboard():
-    return send_from_directory(DASHBOARD_DIR, "index.html")
+app = Flask(__name__, static_folder=str(DASHBOARD_DIR), static_url_path='')
+
+if os.getenv('RENDER'):
+    CORS(app, origins=[
+        'https://quant-enthusiasts-risk-engine.onrender.com',
+        'https://quant-enthusiasts-risk-engine.onrender.com/'
+    ])
+else:
+    CORS(app, origins=[
+        'http://localhost:3000',
+        'http://localhost:5000',
+        'http://localhost:8080'
+    ])
+
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve_dashboard(path):
+    if path and (DASHBOARD_DIR / path).exists():
+        return send_from_directory(DASHBOARD_DIR, path)
+    return send_from_directory(DASHBOARD_DIR, 'index.html')
 
 @app.route('/update_market_data', methods=['POST'])
 def update_market_data():
@@ -328,11 +346,6 @@ def health_check():
             'status': 'degraded',
             'error': str(e)
         }), 500
-
-@app.route("/documentation")
-@app.route("/documentation.html")
-def documentation():
-    return send_from_directory(DASHBOARD_DIR, "documentation.html")
 
 @app.route('/calculate_risk', methods=['POST'])
 def calculate_risk():
@@ -654,5 +667,20 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 10000)) 
-    app.run(debug=True, host="0.0.0.0", port=port)
+    port = int(os.environ.get("PORT", 5000))
+    host = '0.0.0.0'
+    debug = not os.getenv('RENDER')
+    
+    print("=" * 60)
+    print(f"Quant Enthusiasts Risk Engine")
+    print("=" * 60)
+    print(f"Platform: {'Render.com' if os.getenv('RENDER') else 'Local Docker'}")
+    print(f"Host: {host}:{port}")
+    print(f"Debug mode: {debug}")
+    print(f"Dashboard: {DASHBOARD_DIR}")
+    print(f"Dashboard exists: {DASHBOARD_DIR.exists()}")
+    if DASHBOARD_DIR.exists():
+        print(f"Dashboard files: {list(DASHBOARD_DIR.glob('*'))[:5]}")
+    print("=" * 60)
+    
+    app.run(host=host, port=port, debug=debug)

@@ -1,6 +1,5 @@
 import React from "react";
 import type { RiskMetrics } from "@/types";
-import { MetricCard } from "./MetricCard";
 import { Spinner } from "../ui/Spinner";
 import { ErrorMessage } from "../ui/ErrorMessage";
 

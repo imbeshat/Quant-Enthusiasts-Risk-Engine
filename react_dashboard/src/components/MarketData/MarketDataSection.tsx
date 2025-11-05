@@ -20,8 +20,8 @@ export const MarketDataSection: React.FC<MarketDataSectionProps> = ({
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Record<string, Date>>({});
   const [fetchedAssets, setFetchedAssets] = useState<Set<string>>(new Set());
-  const neededAssets =
-    portfolio.length > 0 ? getUniqueAssets(portfolio) : new Set(["AAPL"]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const neededAssets = portfolio.length > 0 ? getUniqueAssets(portfolio) : new Set(["AAPL"]);
 
   // Auto-fetch cached data when new assets are added to portfolio
   useEffect(() => {
@@ -57,6 +57,7 @@ export const MarketDataSection: React.FC<MarketDataSectionProps> = ({
           const newFetchedAssets = new Set(fetchedAssets);
 
           Object.entries(data.updated || {}).forEach(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ([assetId, assetData]: [string, any]) => {
               console.log(` Found cached data for ${assetId}`);
               onUpdateMarketData(assetId, {
@@ -113,6 +114,7 @@ export const MarketDataSection: React.FC<MarketDataSectionProps> = ({
 
         // Update market data for each asset
         Object.entries(data.updated || {}).forEach(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           ([assetId, assetData]: [string, any]) => {
             onUpdateMarketData(assetId, {
               spot: assetData.spot,

@@ -12,7 +12,7 @@ import type { RiskMetrics } from "../types";
 
 export const Dashboard: React.FC = () => {
   const navigate = useNavigate();
-  const { isOnline: isApiOnline, isChecking, healthData } = useApiHealth();
+  const { isOnline: isApiOnline, healthData } = useApiHealth();
   const {
     portfolio,
     marketData,

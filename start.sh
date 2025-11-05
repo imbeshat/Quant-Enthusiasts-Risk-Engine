@@ -1,54 +1,53 @@
-#!/bin/bash
-# start.sh - Launch Quant Enthusiasts Risk Engine (Python API + React Dashboard)
-
-set -e  # Exit immediately if a command fails
+set -e
 
 echo "Starting Quant Enthusiasts Risk Engine..."
+echo "Environment: ${RENDER:+Render.com}${RENDER:-Local Docker}"
 
-# -----------------------------
-# 1. Python API
-# -----------------------------
-echo "Setting up Python API..."
-cd python_api
-
-# Create virtual environment if it doesn't exist
-if [ ! -d "venv" ]; then
-    echo "Creating Python virtual environment..."
-    python3 -m venv venv
-fi
-
-# Activate virtual environment
-source venv/bin/activate
-
-# Install dependencies
-pip install --upgrade pip
-pip install -r requirements.txt
-
-# Build Python bindings
-python3 setup.py build_ext --inplace
-
-cd ..
-
-# -----------------------------
-# 2. React Dashboard
-# -----------------------------
-echo "Setting up react Dashboard..."
-cd react_dashboard
-
-# Install Node dependencies if package.json exists
-if [ -f "package.json" ]; then
+if [ -n "$RENDER" ]; then
+    echo "==> RENDER.COM DEPLOYMENT MODE"
+    
+    echo "Installing Python dependencies..."
+    pip install --upgrade pip
+    pip install -r python_api/requirements.txt
+    pip install pybind11
+    
+    echo "Building Python C++ extensions..."
+    cd python_api
+    python setup.py install
+    cd ..
+    
+    echo "Installing Node.js dependencies..."
+    cd react_dashboard
     npm install
+    
+    echo "Building React production bundle..."
+    npm run build
+    cd ..
+    
+    echo "Starting Flask API server..."
+    cd python_api
+    exec python app.py
+    
+else
+    echo "==> LOCAL DOCKER DEPLOYMENT MODE"
+    
+    if [ "$DEV_MODE" = "true" ]; then
+        echo "Running in DEVELOPMENT mode with hot-reload..."
+        
+        cd /app/react_dashboard
+        npm run dev -- --host &
+        REACT_PID=$!
+        
+        cd /app/python_api
+        /app/venv/bin/python app.py &
+        API_PID=$!
+        
+        trap "kill $REACT_PID $API_PID 2>/dev/null" EXIT
+        wait $REACT_PID $API_PID
+    else
+        echo "Running in PRODUCTION mode..."
+        
+        cd /app/python_api
+        exec /app/venv/bin/python app.py
+    fi
 fi
-
-# Start local server
-echo "Launching react Dashboard..."
-npm run dev
-
-cd ..
-
-# -----------------------------
-# 3. Launch API in foreground
-# -----------------------------
-echo "Launching Python API..."
-cd python_api
-exec python app.py
